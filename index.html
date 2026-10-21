@@ -9,7 +9,17 @@
 .homebar{height:calc(20px + env(safe-area-inset-bottom));width:100%;display:grid;place-items:start center;padding-top:7px;flex-shrink:0;z-index:9;background:transparent;cursor:pointer}.homebar:before{content:"";display:block;width:134px;height:5px;border-radius:999px;background:#141414;opacity:.92}.homebar.invert:before{background:white}
 /* Intro: user chooses by tapping the real photo */
 .intro{background:#fffdfb;overflow-y:auto;scrollbar-width:none}.intro::-webkit-scrollbar{display:none}.intro .statusbar{position:relative;left:auto;right:auto;top:auto;color:#101010;background:#fffdfb}
-.poster-area{height:45dvh;min-height:250px;max-height:420px;flex:0 0 auto;position:relative;display:grid;place-items:center;background:linear-gradient(140deg,#fff,#fff5fb 60%,#e9f9ff);overflow:hidden}.poster{width:100%;height:100%;max-height:100%;min-height:0;object-fit:contain;object-position:center;display:block}.poster-area:after{content:"";height:25px;position:absolute;bottom:-2px;left:0;right:0;background:linear-gradient(transparent,#fffdfb)}
+/* The cover is the selector: touch either person, not a second set of cards. */
+.poster-area{height:min(72dvh,655px);min-height:310px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;background:#fffdfb;overflow:hidden}
+.poster-interactive{height:100%;width:auto;max-width:100%;aspect-ratio:720/1279;position:relative;isolation:isolate}
+.poster{width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.poster-tap{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;cursor:pointer;padding:0;touch-action:manipulation;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.poster-tap::before{content:"";display:block;position:absolute;inset:0;background:rgba(255,255,255,.40);opacity:0;transition:opacity 160ms ease}
+.poster-tap:active::before,.poster-tap.is-tapped::before{opacity:1}
+.poster-tap--jaeho{clip-path:polygon(0 26%,54% 26%,62% 47%,57% 61%,43% 69%,0 68%)}
+.poster-tap--sangwon{clip-path:polygon(52% 43%,100% 44%,100% 100%,43% 100%,38% 69%,47% 54%)}
+@media(max-height:690px){.poster-area{height:69dvh;min-height:240px}}
+
 .intro-options{padding:13px 21px 25px;display:flex;flex-direction:column;gap:9px}.form-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.form-head strong{font-size:20px;font-weight:800;letter-spacing:-.7px}.form-head span{font-size:11px;color:#8d8990}.name-field{display:flex;gap:10px;align-items:center}.name-input{width:100%;border:1px solid #e4e4e7;border-radius:13px;background:#f8f8fa;padding:12px 13px;font-size:15px;outline:none}.name-input:focus{border-color:#75b6ff;background:white}.name-caption{font-size:11px;color:#86838b}
 .character-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.character-card{position:relative;text-align:left;border-radius:17px;background:#ddd;height:148px;overflow:hidden;padding:0;box-shadow:0 5px 14px #33333318;isolation:isolate;transition:transform .15s ease}.character-card:active{transform:scale(.98)}.character-card img{width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block}.character-card:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#0009);z-index:1}.character-card .card-name{position:absolute;left:13px;bottom:12px;color:white;font-weight:800;font-size:17px;z-index:2;text-shadow:0 1px 4px #0007}.character-card .arrow{position:absolute;right:12px;bottom:11px;z-index:2;color:white;font-size:20px}.intro-foot{font-size:11px;color:#a5a2a6;text-align:center;padding:0 0 20px}
 /* User-provided iOS wallpaper and native-inspired SpringBoard */
@@ -170,8 +180,17 @@ function choosePerson(key){let n=$('#player-name')?.value.trim()||state.name||'�
 function imageIndices(){return state.character==='jaeho'?[0,1,2,3]:[4,5,6,7]}
 function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${assets.jaehoBg}")`);a.style.setProperty('--sangwon-bg',`url("${assets.sangwonBg}")`);const c=characters[state.character];
  if(state.screen==='intro'){
-   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="이름" aria-label="플레이어 이름"></div><div class="name-caption">나몽 · 원츄</div><div class="character-cards"><button class="character-card" id="choose-jaeho" aria-label="김재호 선택"><img src="${assets.gallery[2]}" alt="김재호 사진"><span class="card-name">김재호</span><span class="arrow">↗</span></button><button class="character-card" id="choose-sangwon" aria-label="서상원 선택"><img src="${assets.gallery[4]}" alt="서상원 사진"><span class="card-name">서상원</span><span class="arrow">↗</span></button></div></div></section>`;
-   $('#choose-jaeho').onclick=()=>choosePerson('jaeho');$('#choose-sangwon').onclick=()=>choosePerson('sangwon');return;
+   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><div class="poster-interactive"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"><button class="poster-tap poster-tap--jaeho" id="choose-jaeho" aria-label="김재호 사진으로 들어가기"></button><button class="poster-tap poster-tap--sangwon" id="choose-sangwon" aria-label="서상원 사진으로 들어가기"></button></div></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="이름" aria-label="플레이어 이름"></div></div></section>`;
+   let tapped=false;
+   for(const [id,key] of [['choose-jaeho','jaeho'],['choose-sangwon','sangwon']]){
+     $('#'+id).onclick=()=>{
+       if(tapped)return;
+       tapped=true;
+       $('#'+id).classList.add('is-tapped');
+       setTimeout(()=>choosePerson(key),185);
+     };
+   }
+   return;
  }
  if(state.screen==='home'){
    const d=new Date();const day=d.getDate();const days=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];const weekday=days[d.getDay()];
@@ -179,7 +198,7 @@ function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${ass
    a.innerHTML=`<section class="screen home">${status('light')}<div class="home-content">
    <div class="ios-big-calendar"><div class="left"><div class="weekday">${weekday}</div><div class="bigday">${day}</div><div class="no-events">오늘 이벤트 없음</div></div><div class="right"><strong>예정된 이벤트</strong><div class="ios-calendar-placeholder"></div><div class="ios-calendar-placeholder"></div><div class="ios-calendar-placeholder"></div></div></div>
    <div class="ios-widget-label">캘린더</div>
-   <div class="ios-mid-row"><div class="ios-note-parent"><button class="ios-note-widget-button" id="note-widget" aria-label="메모 열기"><div class="ios-note-widget"><div class="ios-note-top">${svg('notes',21)} 메모</div><div class="ios-note-body"><span class="note-preview-title">${esc(nameFormat(state.character==='jaeho'?'$이름이 운동 루틴':'$이름이 바부 ㅎㅎ'))}</span><span class="note-preview-sub">${esc(state.character==='jaeho'?'[김재호] 2026-09-17 09:02':'이거 언제보려나~~~')}</span></div></div></button><div class="ios-widget-label">메모</div></div>
+   <div class="ios-mid-row"><div class="ios-note-parent"><button class="ios-note-widget-button" id="note-widget" aria-label="메모 열기"><div class="ios-note-widget"><div class="ios-note-top">${svg('notes',21)} 메모</div><div class="ios-note-body"><span class="note-preview-title">${esc(nameFormat(state.character==='jaeho'?'운동루틴':'$이름이 바부 ㅎㅎ'))}</span><span class="note-preview-sub">${esc(state.character==='jaeho'?'[김재호] 2026-09-17 09:02':'이거 언제보려나~~~')}</span></div></div></button><div class="ios-widget-label">메모</div></div>
    <div class="ios-small-app"><span class="app-icon clock">${svg('clock',57)}</span><span>시계</span></div>
    <div class="ios-small-app"><span class="app-icon ios-cal-icon"><span class="ios-cal-week">${weekday}</span><span class="ios-cal-day">${day}</span></span><span>캘린더</span></div></div>
    <div class="ios-app-row">${button('photos','사진','photos','photos',43)}${button('kakao','카카오톡','kakao','kakao',46)}${button('instagram','인스타그램','instagram','instagram',45)}${button('notes','메모','notes','notes',42)}</div>
@@ -190,9 +209,9 @@ function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${ass
  }
  if(state.screen==='notes'){
    const jae=state.character==='jaeho';
-   const noteTitle=nameFormat(jae?'$이름이 운동 루틴':'$이름이 바부 ㅎㅎ');
+   const noteTitle=nameFormat(jae?'운동루틴':'$이름이 바부 ㅎㅎ');
    const noteSnippet=jae?'[김재호] 2026-09-17 09:02':'이거 언제보려나~~~';
-   const noteDate=jae?'2026. 9. 17.':'어제';
+   const noteDate=jae?'2026. 9. 17.':'2026. 9. 27.';
    a.innerHTML=`<section class="screen ios-notes-screen">${status()}<div class="ios-notes-top"><button class="ios-notes-back" id="notes-home">${svg('chevron',25)} 폴더</button><span class="ios-notes-top-right">•••</span></div><h1 class="ios-notes-title">메모</h1><div class="ios-notes-search">${svg('search',18)} 검색</div><div class="ios-notes-group"><h2 class="ios-notes-group-title">메모</h2><button class="ios-notes-card" id="open-note"><b>${esc(noteTitle)}</b><span class="small-line">${esc(noteDate)} <span>${esc(noteSnippet)}</span></span></button></div><div class="ios-notes-foot">1개의 메모 <button class="ios-notes-new" id="open-note-bottom" aria-label="메모 보기">${svg('edit',25)}</button></div>${homebar()}</section>`;
    $('#notes-home').onclick=()=>setScreen('home');$('#open-note').onclick=()=>setScreen('note-detail');$('#open-note-bottom').onclick=()=>setScreen('note-detail');return;
  }
@@ -218,8 +237,8 @@ function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${ass
 기구 이름 모르겠으면 전화하고 ㅎ 오빠랑 그냥 같이 하자니까..</p><p class="routine-title">${esc(nameFormat('$이름이 운동 루틴'))}</p><p>(월 수 금 웨이트 / 화 목 유산소)</p><div class="routine-section">월 · 수 · 금 — 웨이트</div>${entries.map(x=>`<div class="routine-entry">${esc(x)}</div>`).join('')}<div class="routine-section">화 · 목 — 유산소</div>${cardio.map(x=>`<div class="routine-entry">${esc(x)}</div>`).join('')}<p class="routine-extras">세트 사이 쉬는 시간 60~90초
 무게는 무리하지 말고 가볍게 시작!</p>`;
    }else{memo=`<p>이거 언제보려나~~~</p>`;}
-   const title=nameFormat(jae?'$이름이 운동 루틴':'$이름이 바부 ㅎㅎ');
-   a.innerHTML=`<section class="screen ios-note-detail">${status()}<div class="ios-notes-top"><button class="ios-notes-back" id="notes-back">${svg('chevron',25)} 메모</button><span class="ios-notes-top-right">•••</span></div><div class="ios-note-detail-scroller"><div class="ios-note-date">${jae?'2026년 9월 17일 오전 9:02':'어제 오후 11:20'}</div><h1 class="ios-note-title">${esc(title)}</h1><div class="ios-note-copy">${memo}</div></div><div class="ios-note-toolstrip"><span>${svg('folder',23)}</span><span>${svg('check',23)}</span><span>${svg('camera',23)}</span><span>${svg('edit',23)}</span></div>${homebar()}</section>`;
+   const title=nameFormat(jae?'운동루틴':'$이름이 바부 ㅎㅎ');
+   a.innerHTML=`<section class="screen ios-note-detail">${status()}<div class="ios-notes-top"><button class="ios-notes-back" id="notes-back">${svg('chevron',25)} 메모</button><span class="ios-notes-top-right">•••</span></div><div class="ios-note-detail-scroller"><div class="ios-note-date">${jae?'2026년 9월 17일 오전 9:02':'2026년 9월 27일 오전 11:20'}</div><h1 class="ios-note-title">${esc(title)}</h1><div class="ios-note-copy">${memo}</div></div><div class="ios-note-toolstrip"><span>${svg('folder',23)}</span><span>${svg('check',23)}</span><span>${svg('camera',23)}</span><span>${svg('edit',23)}</span></div>${homebar()}</section>`;
    $('#notes-back').onclick=()=>setScreen('notes');return;
  }
  if(state.screen==='list'){
