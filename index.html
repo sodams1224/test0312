@@ -10,15 +10,21 @@
 /* Intro: user chooses by tapping the real photo */
 .intro{background:#fffdfb;overflow-y:auto;scrollbar-width:none}.intro::-webkit-scrollbar{display:none}.intro .statusbar{position:relative;left:auto;right:auto;top:auto;color:#101010;background:#fffdfb}
 /* The cover is the selector: touch either person, not a second set of cards. */
-.poster-area{height:min(72dvh,655px);min-height:310px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;background:#fffdfb;overflow:hidden}
+.poster-area{height:min(81dvh,695px);max-height:calc(100dvh - 137px);min-height:310px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;background:#fffdfb;overflow:hidden}
 .poster-interactive{height:100%;width:auto;max-width:100%;aspect-ratio:720/1279;position:relative;isolation:isolate}
 .poster{width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .poster-tap{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;cursor:pointer;padding:0;touch-action:manipulation;overflow:hidden;-webkit-tap-highlight-color:transparent}
 .poster-tap::before{content:"";display:block;position:absolute;inset:0;background:rgba(255,255,255,.40);opacity:0;transition:opacity 160ms ease}
 .poster-tap:active::before,.poster-tap.is-tapped::before{opacity:1}
-.poster-tap--jaeho{inset:26% auto auto 0;width:53%;height:39%}
-.poster-tap--sangwon{inset:45% 0 0 auto;width:59%;height:55%}
-@media(max-height:690px){.poster-area{height:69dvh;min-height:240px}}
+.poster-tap--jaeho{inset:25% auto auto 0;width:51%;height:37%}
+.poster-tap--sangwon{inset:45% 0 0 auto;width:60%;height:55%}
+.poster-tap .tap-hint{position:absolute;z-index:2;display:flex;align-items:center;gap:2px;font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;font-size:clamp(16px,5vw,22px);font-style:italic;font-weight:900;letter-spacing:-1.2px;line-height:1;white-space:nowrap;color:#18151b;-webkit-text-stroke:.25px #18151b;text-shadow:1.6px 1.6px 0 white,-1.6px -1.6px 0 white,-1.6px 1.6px 0 white,1.6px -1.6px 0 white,2.4px 3.3px 0 #ffffffa0;pointer-events:none;transform:rotate(-8deg);transition:transform 160ms ease,filter 160ms ease}
+.poster-tap .tap-arr{font-size:24px;line-height:.8;color:#f17ea9;text-shadow:1.6px 1.6px white,-1.6px 1.6px white,-1.6px -1.6px white}
+.tap-hint--jaeho{left:7%;bottom:7%}
+.tap-hint--sangwon{right:2%;bottom:6%;color:#101319!important;transform:rotate(7deg)!important}
+.poster-tap:active .tap-hint,.poster-tap.is-tapped .tap-hint{filter:brightness(1.18);transform:rotate(-5deg) scale(1.09)}
+.poster-tap--sangwon:active .tap-hint,.poster-tap--sangwon.is-tapped .tap-hint{transform:rotate(4deg) scale(1.09)!important}
+@media(max-height:690px){.poster-area{height:min(76dvh,calc(100dvh - 125px));min-height:240px}}
 
 .intro-options{padding:13px 21px 25px;display:flex;flex-direction:column;gap:9px}.form-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.form-head strong{font-size:20px;font-weight:800;letter-spacing:-.7px}.form-head span{font-size:11px;color:#8d8990}.name-field{display:flex;gap:10px;align-items:center}.name-input{width:100%;border:1px solid #e4e4e7;border-radius:13px;background:#f8f8fa;padding:12px 13px;font-size:15px;outline:none}.name-input:focus{border-color:#75b6ff;background:white}.name-caption{font-size:11px;color:#86838b}
 .character-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.character-card{position:relative;text-align:left;border-radius:17px;background:#ddd;height:148px;overflow:hidden;padding:0;box-shadow:0 5px 14px #33333318;isolation:isolate;transition:transform .15s ease}.character-card:active{transform:scale(.98)}.character-card img{width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block}.character-card:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#0009);z-index:1}.character-card .card-name{position:absolute;left:13px;bottom:12px;color:white;font-weight:800;font-size:17px;z-index:2;text-shadow:0 1px 4px #0007}.character-card .arrow{position:absolute;right:12px;bottom:11px;z-index:2;color:white;font-size:20px}.intro-foot{font-size:11px;color:#a5a2a6;text-align:center;padding:0 0 20px}
@@ -213,7 +219,7 @@ function choosePerson(key){let n=$('#player-name')?.value.trim()||state.name||'�
 function imageIndices(){return state.character==='jaeho'?[0,1,2,3]:[4,5,6,7]}
 function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${assets.jaehoBg}")`);a.style.setProperty('--sangwon-bg',`url("${assets.sangwonBg}")`);const c=characters[state.character];
  if(state.screen==='intro'){
-   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><div class="poster-interactive"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"><button class="poster-tap poster-tap--jaeho" id="choose-jaeho" aria-label="김재호 사진으로 들어가기"></button><button class="poster-tap poster-tap--sangwon" id="choose-sangwon" aria-label="서상원 사진으로 들어가기"></button></div></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="성 제외한 이름 적어주세요🤍" aria-label="성 제외한 이름 입력"></div></div></section>`;
+   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><div class="poster-interactive"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"><button class="poster-tap poster-tap--jaeho" id="choose-jaeho" aria-label="김재호 사진으로 들어가기"><span class="tap-hint tap-hint--jaeho" aria-hidden="true">Click! <span class="tap-arr">↗</span></span></button><button class="poster-tap poster-tap--sangwon" id="choose-sangwon" aria-label="서상원 사진으로 들어가기"><span class="tap-hint tap-hint--sangwon" aria-hidden="true">Click! <span class="tap-arr">↗</span></span></button></div></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="성 제외한 이름 적어주세요🤍" aria-label="성 제외한 이름 입력"></div></div></section>`;
    let tapped=false;
    for(const [id,key] of [['choose-jaeho','jaeho'],['choose-sangwon','sangwon']]){
      $('#'+id).onclick=()=>{
