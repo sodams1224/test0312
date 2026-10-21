@@ -109,6 +109,11 @@
 .ios-note-body .note-preview-sub{font-size:12px;color:#8b898b;margin-top:7px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 
+/* Native iOS message badge and quiet name guidance */
+.name-input::placeholder{color:#9b9ba3;opacity:1;font-size:14px;font-weight:400}
+.name-input.name-needed{border-color:#e8a4ad;box-shadow:0 0 0 2px #f9dfe38c}
+.ios-dock-item{position:relative;overflow:visible}
+.ios-dock-item .ios-unread-count{position:absolute;top:-7px;right:-8px;min-width:24px;height:24px;padding:0 5px;border-radius:999px;background:#ff3b30;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px #0002;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:14px;font-weight:500;line-height:1;text-shadow:none;z-index:8;pointer-events:none;border:1px solid #ff544c}
 /* Native-style iOS Messages and calls */
 .ios-dock-item{position:relative}
 .ios-app-item .badge,.ios-dock-item .badge{position:absolute;top:-9px;right:-10px;background:#ff3b30;border:2px solid #ffffffd7;color:#fff;min-width:22px;height:22px;padding:0 5px;border-radius:13px;display:grid;place-items:center;font-size:13px;font-weight:600;line-height:1;text-shadow:none;box-shadow:0 2px 5px #0002;z-index:4}
@@ -165,7 +170,7 @@ const smsScript={
 const smsName=()=>state.character==='jaeho'?'재호':'상오니';
 const $=(s)=>document.querySelector(s);
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let state={screen:'intro',name:localStorage.getItem('storyName')||'나몽',character:null,stage:0,messages:[],busy:false,showChoices:false,finished:false,viewerIndex:0};
+let state={screen:'intro',name:'',character:null,stage:0,messages:[],busy:false,showChoices:false,finished:false,viewerIndex:0};
 let timers=[],epoch=0,noticeTimer=0;
 const later=(fn,delay)=>{const t=setTimeout(fn,delay);timers.push(t)};
 const clearTimers=()=>{epoch++;timers.forEach(clearTimeout);timers=[];clearTimeout(noticeTimer)};
@@ -208,11 +213,13 @@ function choosePerson(key){let n=$('#player-name')?.value.trim()||state.name||'�
 function imageIndices(){return state.character==='jaeho'?[0,1,2,3]:[4,5,6,7]}
 function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${assets.jaehoBg}")`);a.style.setProperty('--sangwon-bg',`url("${assets.sangwonBg}")`);const c=characters[state.character];
  if(state.screen==='intro'){
-   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><div class="poster-interactive"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"><button class="poster-tap poster-tap--jaeho" id="choose-jaeho" aria-label="김재호 사진으로 들어가기"></button><button class="poster-tap poster-tap--sangwon" id="choose-sangwon" aria-label="서상원 사진으로 들어가기"></button></div></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="이름" aria-label="플레이어 이름"></div></div></section>`;
+   a.innerHTML=`<section class="screen intro">${status()}<div class="poster-area"><div class="poster-interactive"><img class="poster" src="${assets.cover}" alt="재호 상원이랑 놀기"><button class="poster-tap poster-tap--jaeho" id="choose-jaeho" aria-label="김재호 사진으로 들어가기"></button><button class="poster-tap poster-tap--sangwon" id="choose-sangwon" aria-label="서상원 사진으로 들어가기"></button></div></div><div class="intro-options"><div class="name-field"><input id="player-name" class="name-input" maxlength="14" autocomplete="off" value="${esc(state.name)}" placeholder="성 제외한 이름 적어주세요🤍" aria-label="성 제외한 이름 입력"></div></div></section>`;
    let tapped=false;
    for(const [id,key] of [['choose-jaeho','jaeho'],['choose-sangwon','sangwon']]){
      $('#'+id).onclick=()=>{
        if(tapped)return;
+       const nameInput=$('#player-name');
+       if(!nameInput.value.trim()){nameInput.focus();nameInput.classList.add('name-needed');return;}
        tapped=true;
        $('#'+id).classList.add('is-tapped');
        setTimeout(()=>choosePerson(key),185);
@@ -231,7 +238,7 @@ function render(){const a=$('#app');a.style.setProperty('--jaeho-bg',`url("${ass
    <div class="ios-small-app"><span class="app-icon ios-cal-icon"><span class="ios-cal-week">${weekday}</span><span class="ios-cal-day">${day}</span></span><span>캘린더</span></div></div>
    <div class="ios-app-row">${button('photos','사진','photos','photos',43)}${button('kakao','카카오톡','kakao','kakao',46)}${button('instagram','인스타그램','instagram','instagram',45)}${button('notes','메모','notes','notes',42)}</div>
    <div class="ios-search-wrap"><div class="ios-search">${svg('search',13)} 검색</div></div></div>
-   <div class="ios-home-dock"><button id="phone-dock" class="ios-dock-item" aria-label="전화 열기. 부재중 0개"><span class="app-icon phone">${svg('phone',39)}</span></button><button id="messages-dock" class="ios-dock-item" aria-label="메시지 열기. 읽지 않은 문자 1개"><span class="app-icon messages">${svg('messages',39)}<span class="badge">1</span></span></button><span class="ios-dock-item"><span class="app-icon instagram">${svg('instagram',40)}</span></span><button id="kakao-dock" class="ios-dock-item" aria-label="카카오톡 열기"><span class="app-icon kakao">${svg('kakao',43)}</span></button></div>${homebar(true)}</section>`;
+   <div class="ios-home-dock"><button id="phone-dock" class="ios-dock-item" aria-label="전화 열기. 부재중 0개"><span class="app-icon phone">${svg('phone',39)}</span></button><button id="messages-dock" class="ios-dock-item" aria-label="메시지 열기. 읽지 않은 문자 1개"><span class="app-icon messages">${svg('messages',39)}</span><span class="ios-unread-count" aria-hidden="true">1</span></button><span class="ios-dock-item"><span class="app-icon instagram">${svg('instagram',40)}</span></span><button id="kakao-dock" class="ios-dock-item" aria-label="카카오톡 열기"><span class="app-icon kakao">${svg('kakao',43)}</span></button></div>${homebar(true)}</section>`;
    $('#kakao').onclick=()=>setScreen('list');$('#kakao-dock').onclick=()=>setScreen('list');$('#photos').onclick=()=>setScreen('gallery');$('#notes').onclick=()=>setScreen('notes');$('#note-widget').onclick=()=>setScreen('notes');$('#messages-dock').onclick=()=>setScreen('sms-list');$('#phone-dock').onclick=()=>setScreen('calls');
    return;
  }
